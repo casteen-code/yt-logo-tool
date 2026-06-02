@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YouTube Cover Logo Tool</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f5f2;
+      --panel: #ffffff;
+      --ink: #191919;
+      --muted: #686868;
+      --line: #deded8;
+      --brand: #111111;
+      --ok: #0f7a45;
+      --warn: #a45a00;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    main {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .language-switcher {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .language-switcher button {
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .language-switcher button.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #ffffff;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .native-file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    .file-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px dashed #b9b9b1;
+      border-radius: 8px;
+      background: #fafaf8;
+    }
+
+    .file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border-radius: 6px;
+      background: #111111;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .file-name {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logo-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .logo-option {
+      min-height: 86px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .logo-option.active {
+      outline: 2px solid #111111;
+      border-color: #111111;
+    }
+
+    .logo-option img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      background: #050505;
+      border-radius: 6px;
+    }
+
+    .logo-option span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 16px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .secondary {
+      background: #e8e8e2;
+      color: var(--ink);
+    }
+
+    .status {
+      min-height: 48px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f7f7f4;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .status.ok {
+      color: var(--ok);
+      border-color: #b8dbc8;
+      background: #f2faf5;
+    }
+
+    .status.warn {
+      color: var(--warn);
+      border-color: #e8c99f;
+      background: #fff8ed;
+    }
+
+    .preview {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #050505;
+      display: grid;
+      place-items: center;
+    }
+
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    ol {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .small {
+      font-size: 13px;
+    }
+
+    @media (max-width: 780px) {
+      main {
+        padding: 24px 0;
+      }
+
+      .topbar {
+        display: block;
+      }
+
+      .language-switcher {
+        justify-content: flex-start;
+        margin-top: 14px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="topbar">
+        <div>
+          <h1 data-i18n="title">YouTube Cover Logo Tool</h1>
+          <p data-i18n="subtitle">Select your cover images. This tool will add the logo in the fixed position and save new PNG files.</p>
+        </div>
+        <div class="language-switcher" aria-label="Language">
+          <button type="button" data-lang="zh">简体中文</button>
+          <button type="button" data-lang="id">Indonesia</button>
+          <button type="button" data-lang="en">English</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel controls">
+        <div>
+          <label for="coverFiles" data-i18n="coverLabel">1. Select cover images</label>
+          <input id="coverFiles" class="native-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+          <div class="file-picker">
+            <label class="file-button" for="coverFiles" data-i18n="chooseFiles">Choose files</label>
+            <span id="coverFileText" class="file-name"></span>
+          </div>
+        </div>
+
+        <div>
+          <label for="logoUploadInput" data-i18n="logoLabel">2. Select logo</label>
+          <input id="logoUploadInput" class="native-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+          <div class="file-picker">
+            <label class="file-button" for="logoUploadInput" data-i18n="uploadLogo">Upload new logo</label>
+            <span id="logoFileText" class="file-name"></span>
+          </div>
+          <div id="logoOptions" class="logo-options"></div>
+        </div>
+
+        <button id="startButton" type="button" disabled data-i18n="startButton">Start</button>
+
+        <div id="status" class="status" data-i18n="initialStatus">Please select images first.</div>
+      </section>
+
+      <aside class="panel">
+        <div class="preview">
+          <img id="logoPreview" alt="Logo position preview">
+        </div>
+        <ol>
+          <li data-i18n="tipBrowser">Use Chrome or Edge on Windows and Mac.</li>
+          <li data-i18n="tipBuiltIn">The default logo is built in.</li>
+          <li data-i18n="tipCustom">For a custom logo, use a transparent 1280x720 overlay image.</li>
+          <li data-i18n="tipName">New files will end with _with_logo.</li>
+          <li data-i18n="tipZip">If folder saving is not supported, finished images will download as one ZIP file.</li>
+        </ol>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const translations = {
+      en: {
+        title: "YouTube Cover Logo Tool",
+        subtitle: "Select your cover images. This tool will add the logo in the fixed position and save new PNG files.",
+        coverLabel: "1. Select cover images",
+        logoLabel: "2. Select logo",
+        chooseFiles: "Choose files",
+        uploadLogo: "Upload new logo",
+        noFile: "No file selected",
+        oneFile: "1 file selected",
+        manyFiles: "{count} files selected",
+        defaultLogo: "Using logo-overlay.png",
+        builtInLogo: "logo-overlay.png",
+        uploadedLogosAdded: "{count} logo option(s) added.",
+        logoSelected: "Logo selected: {name}",
+        noLogoInFolder: "No image logo found.",
+        startButton: "Start",
+        initialStatus: "Please select images first.",
+        tipBrowser: "Use Chrome or Edge on Windows and Mac.",
+        tipBuiltIn: "The default logo is built in.",
+        tipCustom: "For a custom logo, use a transparent 1280x720 overlay image.",
+        tipName: "New files will end with _with_logo.",
+        tipZip: "Finished images will download as one ZIP file.",
+        selected: "{count} image(s) selected.",
+        cannotRead: "Cannot read image: {name}",
+        exportFailed: "Cannot export this image.",
+        logoFailed: "The logo did not load. Please try another logo image.",
+        customLogo: "Logo selected: {name}",
+        processing: "Processing: {current} / {total}\n{name}",
+        saving: "Saving: {current} / {total}\n{name}",
+        creatingZip: "Creating ZIP file...",
+        done: "Done: {count} image(s) finished.",
+        downloadedZip: "Downloaded as covers_with_logo.zip.",
+        failed: "Failed: {count}",
+        failedDefault: "failed",
+        generalFailed: "Failed. Please try again in Chrome or Edge."
+      },
+      zh: {
+        title: "YouTube 封面贴 Logo 工具",
+        subtitle: "选择封面图片，工具会自动把 logo 贴到固定位置，并保存成新的 PNG 图片。",
+        coverLabel: "1. 选择封面图片",
+        logoLabel: "2. 选择 logo",
+        chooseFiles: "选择文件",
+        uploadLogo: "上传新 logo",
+        noFile: "未选择文件",
+        oneFile: "已选择 1 个文件",
+        manyFiles: "已选择 {count} 个文件",
+        defaultLogo: "正在使用 logo-overlay.png",
+        builtInLogo: "logo-overlay.png",
+        uploadedLogosAdded: "已新增 {count} 个 logo 选项。",
+        logoSelected: "已选择 logo：{name}",
+        noLogoInFolder: "没有找到图片 logo。",
+        startButton: "开始",
+        initialStatus: "请先选择图片。",
+        tipBrowser: "Windows 和 Mac 建议使用 Chrome 或 Edge。",
+        tipBuiltIn: "默认 logo 已经内置。",
+        tipCustom: "如果更换 logo，建议使用透明 1280x720 位置图。",
+        tipName: "新文件名会自动加上 _with_logo。",
+        tipZip: "完成图片会打包成一个 ZIP 下载。",
+        selected: "已选择 {count} 张图片。",
+        cannotRead: "无法读取图片：{name}",
+        exportFailed: "无法导出这张图片。",
+        logoFailed: "logo 没有加载成功，请换一张 logo 图片。",
+        customLogo: "已选择 logo：{name}",
+        processing: "正在处理：{current} / {total}\n{name}",
+        saving: "正在保存：{current} / {total}\n{name}",
+        creatingZip: "正在打包 ZIP 文件...",
+        done: "完成：{count} 张图片。",
+        downloadedZip: "已下载为 covers_with_logo.zip。",
+        failed: "失败：{count}",
+        failedDefault: "失败",
+        generalFailed: "处理失败，请用 Chrome 或 Edge 再试。"
+      },
+      id: {
+        title: "Alat Logo Cover YouTube",
+        subtitle: "Pilih gambar cover. Alat ini akan menambahkan logo di posisi tetap dan menyimpan file PNG baru.",
+        coverLabel: "1. Pilih gambar cover",
+        logoLabel: "2. Pilih logo",
+        chooseFiles: "Pilih file",
+        uploadLogo: "Unggah logo baru",
+        noFile: "Belum ada file",
+        oneFile: "1 file dipilih",
+        manyFiles: "{count} file dipilih",
+        defaultLogo: "Menggunakan logo-overlay.png",
+        builtInLogo: "logo-overlay.png",
+        uploadedLogosAdded: "{count} opsi logo ditambahkan.",
+        logoSelected: "Logo dipilih: {name}",
+        noLogoInFolder: "Tidak ada gambar logo.",
+        startButton: "Mulai",
+        initialStatus: "Pilih gambar terlebih dahulu.",
+        tipBrowser: "Gunakan Chrome atau Edge di Windows dan Mac.",
+        tipBuiltIn: "Logo default sudah ada di dalam alat.",
+        tipCustom: "Untuk logo custom, gunakan gambar overlay transparan 1280x720.",
+        tipName: "Nama file baru akan berakhir dengan _with_logo.",
+        tipZip: "Hasil gambar akan diunduh sebagai satu file ZIP.",
+        selected: "{count} gambar dipilih.",
+        cannotRead: "Tidak bisa membaca gambar: {name}",
+        exportFailed: "Tidak bisa mengekspor gambar ini.",
+        logoFailed: "Logo gagal dimuat. Coba gunakan gambar logo lain.",
+        customLogo: "Logo dipilih: {name}",
+        processing: "Memproses: {current} / {total}\n{name}",
+        saving: "Menyimpan: {current} / {total}\n{name}",
+        creatingZip: "Membuat file ZIP...",
+        done: "Selesai: {count} gambar berhasil diproses.",
+        downloadedZip: "Diunduh sebagai covers_with_logo.zip.",
+        failed: "Gagal: {count}",
+        failedDefault: "gagal",
+        generalFailed: "Gagal. Coba lagi dengan Chrome atau Edge."
+      }
+    };
+
+    let currentLanguage = "en";
+
+    function t(key, values = {}) {
+      let text = translations[currentLanguage][key] || translations.en[key] || key;
+      Object.entries(values).forEach(([name, value]) => {
+        text = text.replaceAll(`{${name}}`, value);
+      });
+      return text;
+    }
+
+    const coverFiles = document.querySelector("#coverFiles");
+    const logoUploadInput = document.querySelector("#logoUploadInput");
+    const startButton = document.querySelector("#startButton");
+    const statusBox = document.querySelector("#status");
+    const logoPreview = document.querySelector("#logoPreview");
+    const coverFileText = document.querySelector("#coverFileText");
+    const logoFileText = document.querySelector("#logoFileText");
+    const logoOptions = document.querySelector("#logoOptions");
+    const languageButtons = document.querySelectorAll("[data-lang]");
+    const logo = new Image();
+    let uploadedLogoOptions = [];
+    let selectedLogoName = "logo-overlay.png";
+    let selectedLogoId = "asset-0";
+    const logoDataUrl = "data:image/png;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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";
+
+    const assetLogoOptions = [
+      { id: "asset-0", name: "logo-overlay.png", url: logoDataUrl }
+    ];
+
+    logoPreview.src = assetLogoOptions[0].url;
+    logo.src = assetLogoOptions[0].url;
+
+    function applyLanguage(language) {
+      currentLanguage = language;
+      document.documentElement.lang = language === "zh" ? "zh-CN" : language;
+      document.title = t("title");
+
+      document.querySelectorAll("[data-i18n]").forEach((element) => {
+        element.textContent = t(element.dataset.i18n);
+      });
+
+      languageButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.lang === language);
+      });
+      updateFileLabels();
+
+      if (coverFiles.files.length > 0) {
+        setStatus(t("selected", { count: coverFiles.files.length }));
+      } else {
+        setStatus(t("initialStatus"));
+      }
+    }
+
+    function fileCountText(count) {
+      if (count === 0) return t("noFile");
+      if (count === 1) return t("oneFile");
+      return t("manyFiles", { count });
+    }
+
+    function updateFileLabels() {
+      coverFileText.textContent = fileCountText(coverFiles.files.length);
+      logoFileText.textContent = selectedLogoName || assetLogoOptions[0].name;
+      renderLogoOptions();
+    }
+
+    function clearUploadedLogoUrls() {
+      uploadedLogoOptions.forEach((item) => URL.revokeObjectURL(item.url));
+      uploadedLogoOptions = [];
+    }
+
+    function logoOptionButton(id, name, url) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `logo-option${selectedLogoId === id ? " active" : ""}`;
+      button.dataset.logoId = id;
+
+      const image = document.createElement("img");
+      image.src = url;
+      image.alt = name;
+
+      const label = document.createElement("span");
+      label.textContent = name;
+
+      button.append(image, label);
+      button.addEventListener("click", () => selectLogo(id, name, url));
+      return button;
+    }
+
+    function renderLogoOptions() {
+      logoOptions.innerHTML = "";
+      assetLogoOptions.forEach((item) => {
+        logoOptions.append(logoOptionButton(item.id, item.name, item.url));
+      });
+      uploadedLogoOptions.forEach((item) => {
+        logoOptions.append(logoOptionButton(item.id, item.name, item.url));
+      });
+    }
+
+    function selectLogo(id, name, url) {
+      selectedLogoId = id;
+      selectedLogoName = name;
+      logoPreview.src = url;
+      logo.src = url;
+      updateFileLabels();
+      setStatus(t("logoSelected", { name }));
+    }
+
+    function setStatus(text, type = "") {
+      statusBox.textContent = text;
+      statusBox.className = `status ${type}`;
+    }
+
+    function updateStartState() {
+      startButton.disabled = coverFiles.files.length === 0;
+      updateFileLabels();
+      if (coverFiles.files.length > 0) {
+        setStatus(t("selected", { count: coverFiles.files.length }));
+      }
+    }
+
+    function cleanName(fileName) {
+      return fileName.replace(/\.[^.]+$/, "") + "_with_logo.png";
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(t("cannotRead", { name: file.name })));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    function waitForLogo() {
+      return new Promise((resolve, reject) => {
+        if (logo.complete && logo.naturalWidth > 0) {
+          resolve();
+          return;
+        }
+
+        logo.onload = () => resolve();
+        logo.onerror = () => reject(new Error(t("logoFailed")));
+      });
+    }
+
+    function canvasToBlob(canvas) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error(t("exportFailed")));
+          }
+        }, "image/png", 0.98);
+      });
+    }
+
+    function downloadBlob(fileName, blob) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 30000);
+    }
+
+    function makeCrcTable() {
+      const table = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) {
+          c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        }
+        table[i] = c >>> 0;
+      }
+      return table;
+    }
+
+    const crcTable = makeCrcTable();
+
+    function crc32(bytes) {
+      let crc = 0xffffffff;
+      for (let i = 0; i < bytes.length; i++) {
+        crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+      }
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function textBytes(text) {
+      return new TextEncoder().encode(text);
+    }
+
+    function makeZipDate() {
+      const now = new Date();
+      const time = (now.getHours() << 11) | (now.getMinutes() << 5) | Math.floor(now.getSeconds() / 2);
+      const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+      return { time, date };
+    }
+
+    function writeHeader(view, offset, values) {
+      values.forEach(([size, value]) => {
+        if (size === 2) view.setUint16(offset, value, true);
+        if (size === 4) view.setUint32(offset, value, true);
+        offset += size;
+      });
+      return offset;
+    }
+
+    async function makeZip(entries) {
+      const zipDate = makeZipDate();
+      const parts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      for (const entry of entries) {
+        const nameBytes = textBytes(entry.fileName);
+        const dataBytes = new Uint8Array(await entry.blob.arrayBuffer());
+        const crc = crc32(dataBytes);
+
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        let localOffset = writeHeader(new DataView(localHeader.buffer), 0, [
+          [4, 0x04034b50], [2, 20], [2, 0x0800], [2, 0],
+          [2, zipDate.time], [2, zipDate.date], [4, crc],
+          [4, dataBytes.length], [4, dataBytes.length],
+          [2, nameBytes.length], [2, 0]
+        ]);
+        localHeader.set(nameBytes, localOffset);
+        parts.push(localHeader, dataBytes);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        let centralOffset = writeHeader(new DataView(centralHeader.buffer), 0, [
+          [4, 0x02014b50], [2, 20], [2, 20], [2, 0x0800], [2, 0],
+          [2, zipDate.time], [2, zipDate.date], [4, crc],
+          [4, dataBytes.length], [4, dataBytes.length],
+          [2, nameBytes.length], [2, 0], [2, 0], [2, 0],
+          [2, 0], [4, 0], [4, offset]
+        ]);
+        centralHeader.set(nameBytes, centralOffset);
+        centralParts.push(centralHeader);
+
+        offset += localHeader.length + dataBytes.length;
+      }
+
+      const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+      const endHeader = new Uint8Array(22);
+      writeHeader(new DataView(endHeader.buffer), 0, [
+        [4, 0x06054b50], [2, 0], [2, 0],
+        [2, entries.length], [2, entries.length],
+        [4, centralSize], [4, offset], [2, 0]
+      ]);
+
+      return new Blob([...parts, ...centralParts, endHeader], { type: "application/zip" });
+    }
+
+    async function processFile(file) {
+      const base = await loadImageFromFile(file);
+      const canvas = document.createElement("canvas");
+      canvas.width = base.naturalWidth;
+      canvas.height = base.naturalHeight;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(logo, 0, 0, canvas.width, canvas.height);
+
+      const blob = await canvasToBlob(canvas);
+      URL.revokeObjectURL(base.src);
+      return { fileName: cleanName(file.name), blob };
+    }
+
+    coverFiles.addEventListener("change", updateStartState);
+
+    languageButtons.forEach((button) => {
+      button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+    });
+
+    logoUploadInput.addEventListener("change", async () => {
+      clearUploadedLogoUrls();
+
+      const files = Array.from(logoUploadInput.files)
+        .filter((file) => file.type.startsWith("image/"));
+
+      if (files.length === 0) {
+        selectLogo(assetLogoOptions[0].id, assetLogoOptions[0].name, assetLogoOptions[0].url);
+        updateFileLabels();
+        setStatus(t("noLogoInFolder"), "warn");
+        return;
+      }
+
+      uploadedLogoOptions = files.map((file, index) => ({
+        id: `uploaded-${index}`,
+        name: file.name,
+        url: URL.createObjectURL(file)
+      }));
+
+      const firstLogo = uploadedLogoOptions[0];
+      selectLogo(firstLogo.id, firstLogo.name, firstLogo.url);
+      setStatus(t("uploadedLogosAdded", { count: uploadedLogoOptions.length }));
+    });
+
+    startButton.addEventListener("click", async () => {
+      const files = Array.from(coverFiles.files);
+      startButton.disabled = true;
+
+      try {
+        await waitForLogo();
+        const finished = [];
+        const failed = [];
+
+        for (let index = 0; index < files.length; index++) {
+          setStatus(t("processing", { current: index + 1, total: files.length, name: files[index].name }));
+          try {
+            finished.push(await processFile(files[index]));
+          } catch (error) {
+            failed.push(`${files[index].name}: ${error.message || t("failedDefault")}`);
+          }
+        }
+
+        if (finished.length > 0) {
+          setStatus(t("creatingZip"));
+          const zipBlob = await makeZip(finished);
+          downloadBlob("covers_with_logo.zip", zipBlob);
+        }
+
+        const message = [
+          t("done", { count: finished.length }),
+          t("downloadedZip"),
+          failed.length ? `${t("failed", { count: failed.length })}\n${failed.join("\n")}` : ""
+        ].filter(Boolean).join("\n");
+
+        setStatus(message, failed.length ? "warn" : "ok");
+      } catch (error) {
+        setStatus(error.message || t("generalFailed"), "warn");
+      } finally {
+        startButton.disabled = false;
+      }
+    });
+
+    applyLanguage(currentLanguage);
+  </script>
+</body>
+</html>
